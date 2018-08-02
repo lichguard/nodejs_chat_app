@@ -1,0 +1,86 @@
+﻿<!-- V0.1 -->
+<!doctype html>
+<head>
+    <title>Chat System</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=0.4">
+    <meta name="Language" content="eng">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+
+    <link href="main.css" rel="stylesheet" type="text/css" media="screen">
+    <script src="/jquery/dist/jquery.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <div id="alertdiv" class="alert" style="display:none;">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <strong>Error!</strong> Username already exists!.
+    </div>
+
+    <header>
+        <span id="welcome_span">Welcome</span><br>
+        <id id="loginform">
+            Username: <input type="text" value="Guest" id="clientNameText" style="color:white;resize:none; border:hidden; font-size:1.0rem; background-color:rgb(22,22,32);" placeholder="Your name..." /> &nbsp;&nbsp;&nbsp;
+            Password:  <input type="password" value="" id="clientPasswordText" style="color:white;resize:none; border:hidden; font-size:1.0rem; background-color:rgb(22,22,32);" placeholder="" />
+            <button id="connectBtn" onclick="connect();">Sign in</button>
+            <button id="registerBtn" onclick="registerButtonEvent();">Register</button>
+        </id>
+
+        <button id="disconnectBtn" onclick="disconnect();" style="display:none">disconnect</button>
+
+    </header>
+    <!-- page wrapper -->
+    <div id="pagewrapper" class="flex-container">
+        <!-- sidebar -->
+
+        <div id="sidebar" class="sidebar space">
+            <input id="searchTextbox" type="text" onkeyup="searchUser();" onblur="" onfocus="loadAllUsers();" style="display:inline;color:white; padding:5px 2px;margin:2px;border:none; font-size:1.1rem; width:97%;overflow:hidden;background-color:rgb(30,30,30);" placeholder="Search users... (* for all)" />
+
+            <div id="allUsers" style="padding:3px 3px;display:none;
+             margin:2px;border:none; font-size:1.1rem; width:100%;overflow:hidden;">
+                <a>> Users</a>
+
+            </div>
+
+            <div id="onlineList" style="padding:3px 3px;
+             margin:2px;border:none; font-size:1.1rem; width:100%;overflow:hidden;">
+                <a>> Online</a>
+            </div>
+
+            <div id="offlineList" style="padding:3px 3px;
+             margin:2px;border:none; font-size:1.1rem; width:100%;overflow:hidden;">
+                <a>> Offline</a>
+            </div>
+        </div>
+
+        <!-- Chat wrapper -->
+        <div id="chatwrapper" class="flex-container-vertical space">
+
+            <!-- chat body -->
+            <div id="chatbodies" style="flex: 0.9; background-color:rgb(30,30,30);overflow-x:hidden;">
+                <div id="channel_body_default" class="chatbody">
+                    <span class="textItem" style="top:100%;bottom:100%;">Welcome! Please choose a person on the left panel to chat with</span>
+                </div>
+            </div>
+
+            <!-- Chatcontrol -->
+            <div id="chatcontrols" class="flex-container space">
+                <div id="textareawrapper" style="margin-right:5px;">
+                    <textarea id="sendText" onkeyup="if (event.keyCode == 13) sendmg();" style="color:white;resize:none; border:hidden; font-size:1.5rem; width:100%;height:100%;overflow:hidden;background-color:rgb(30,30,30);" placeholder="Write a message..."></textarea>
+                </div>
+                <div id="sendbuttonwrapper" class="sidebar">
+                    <button id="sendButton" onclick="sendmg();" style="margin-right:5px;width:100%;height:100%;">Send</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>2018 All rights reserved!</footer>
+
+    <script type="text/javascript" src="main.js"></script>
+</body>
