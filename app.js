@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
+const fs = require('fs');
 const io = require('socket.io')(server);
 const port = process.env.PORT || 9000;
 const bodyParser = require('body-parser');
@@ -60,8 +61,20 @@ app.get("/getusers", function (req, res) {
     res.send(JSON.stringify(Object.keys(users_db)));
 });
 
+//doesnt work
+/*app.get("/managment.html", function (req, res) {
+    log("INFO", 'GET', "managment page request, sending managment.html");
+    fs.readFile(__dirname + '/managment.html', function (err, data) {
+        let html = data;
+        res.status(200, {"Content-Type": "text/html", "Content-Length" : html.length });
+        res.end(html);
+    }
+    );
 
-/* serves all the static files */
+});
+*/
+
+/* serves all other static files like css and js */
 app.get(/^(.+)$/, function (req, res) {
     log('INFO', 'GET', 'static file request: ' + req.params[0]);
     res.status(200);
@@ -181,14 +194,14 @@ function userConnectingHandler(client, userInfo) {
     let password = userInfo.password;
     //check if the name is available
     if (!(userName in users_db) || users_db[userName].userPassword != password) {
-        log('WARNING', 'SOCKET', "Connection refued for: username: " + userName + ' password: ' + password);
+        log('WARNING', 'SOCKET', "Connection refused for: username: " + userName + ' password: ' + password + ". username or password invalid") ;
         client.emit('errorMessage', 'username or password invalid');
         client.disconnect();
         return;
     }
 
     if (users_db[userName].client != null) {
-        log('WARNING', 'SOCKET', userName + ' username doesnt exist');
+        log('WARNING', 'SOCKET', userName + ' Connected on another device');
         client.emit('errorMessage', 'Connected on another device');
         client.disconnect();
     }
@@ -242,7 +255,7 @@ function processMessage(client, data) {
     let recp = users_db[data.to];
     if (!recp) {
         log("WARNING", 'SOCKET', sender.userName + ' tried to send msg to a non exisiting user: ' + data.to);
-        client.emit('errorMessage', 'User does not exist!');
+        client.emit('errorMessage', 'Please select a valid user!');
         return;
     }
 

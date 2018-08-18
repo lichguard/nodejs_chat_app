@@ -71,9 +71,9 @@ header, footer {
     cursor: pointer;
 }
 
-    .friendsListItem:hover {
-        background-color: rgb(0,79,157);
-    }
+.friendsListItem:hover {
+    background-color: rgb(0,79,157);
+}
 
 .textItem {
     display: block;
@@ -106,10 +106,10 @@ header, footer {
     border-radius: 8px;
 }
 
-    #sendButton:hover {
-        background-color: rgb(0,79,157);
-        border-color: rgb(0,79,157);
-    }
+#sendButton:hover {
+    background-color: rgb(0,79,157);
+    border-color: rgb(0,79,157);
+}
 
 
 
@@ -126,9 +126,9 @@ header, footer {
     background: #f1f1f1;
 }
     /* Handle on hover */
-    ::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
 
 .sidebar {
     flex: 0.2;
@@ -184,4 +184,15 @@ header, footer {
     flex: 0.9;
     background-color: rgb(30,30,30);
     overflow-x: hidden;
+}
+
+.box {
+    width:300px;
+    height:300px;
+    position:fixed;
+    margin-left:-150px; /* half of width */
+    margin-top:-150px;  /* half of height */
+    top:50%;
+    left:50%;
+
 }
