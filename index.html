@@ -16,7 +16,7 @@
 
 <body>
     <div id="alertdiv" class="alert" style="display:none;">
-        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <span class="closebtn" onclick="closeAlert();">&times;</span>
         <strong>Error!</strong> Username already exists!.
     </div>
 
@@ -36,8 +36,8 @@
     <div id="pagewrapper" class="flex-container">
         <!-- sidebar -->
 
-        <div id="sidebar" class="sidebar space">
-            <input id="searchTextbox" type="text" onkeyup="searchUser();" onblur="" onfocus="loadAllUsers();" style="display:inline;color:white; padding:5px 2px;margin:2px;border:none; font-size:1.1rem; width:97%;overflow:hidden;background-color:rgb(30,30,30);" placeholder="Search users... (* for all)" />
+        <div id="pagesidebar" class="sidebar space">
+            <input id="searchTextbox" type="text" onkeyup="searchUser();" onblur="" onfocus="loadAllUsers();" placeholder="Search users... (* for all)" />
 
             <div id="allUsers" style="padding:3px 3px;display:none;
              margin:2px;border:none; font-size:1.1rem; width:100%;overflow:hidden;">
@@ -72,7 +72,7 @@
                     <textarea id="sendText" onkeyup="if (event.keyCode == 13) sendmg();" style="color:white;resize:none; border:hidden; font-size:1.5rem; width:100%;height:100%;overflow:hidden;background-color:rgb(30,30,30);" placeholder="Write a message..."></textarea>
                 </div>
                 <div id="sendbuttonwrapper" class="sidebar">
-                    <button id="sendButton" onclick="sendmg();" style="margin-right:5px;width:100%;height:100%;">Send</button>
+                    <button id="sendButton" onclick="sendmg();">Send</button>
                 </div>
             </div>
 

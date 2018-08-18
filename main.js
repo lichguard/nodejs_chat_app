@@ -28,7 +28,8 @@ const DOM = {
 };
 
 function connect() {
-    if (!DOM.userName.value) {
+    closeAlert();
+    if (!DOM.userName.value || !DOM.userPassword.value) {
         displayAlert('Username or password must not be empty!');
         return;
     }
@@ -84,6 +85,7 @@ function disconnect() {
     DOM.welcomeSpan.innerHTML = "welcome";
     DOM.disconnectButton.style.display = "none";
     DOM.loginForm.style.display = "block";
+    activeChannelID = 'default';
     purge();
 }
 
@@ -161,6 +163,7 @@ function appendChatBox(msg, name) {
 //this client sends a msg
 function sendmg() {
     //prepare vars
+    closeAlert();
     let msgDescriptor = {
         "from": clientName,
         "to": activeChannelID,
@@ -185,7 +188,7 @@ function sendmg() {
 
 //client press on a different channel
 function switchChat(evt, selectedChannelID) {
-
+    closeAlert();
     if (activeChannelID != selectedChannelID) {
         //inactivate last selector
         if (getChannelSelector(activeChannelID) != null)
@@ -220,6 +223,7 @@ function switchChat(evt, selectedChannelID) {
 }
 
 function addFriend(name) {
+    closeAlert();
     if (!connected)
         return;
     socket.emit('subscribe', name);
@@ -301,6 +305,9 @@ function httpRequest(success, fail, method, path, params, body) {
 /////////aux functions/////////////
 function searchUser() {
 
+    if (!connected)
+        return;
+
     if (DOM.searchTextbox.value === "") {
         DOM.onlineList.style.display = "";
         DOM.offlineList.style.display = "";
@@ -327,8 +334,14 @@ function searchUser() {
 }
 
 function displayAlert(text) {
+
     DOM.alert.innerHTML = `<span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>` + text;
     DOM.alert.style.display = "block";
+
+}
+
+function closeAlert() {
+    DOM.alert.style.display = "none";
 }
 
 function getChannelSelector(channel_id) {

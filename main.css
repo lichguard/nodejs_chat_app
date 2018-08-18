@@ -130,10 +130,28 @@ header, footer {
         background: #555;
     }
 
-#sidebar {
+.sidebar {
     flex: 0.2;
     background-color: rgb(30,30,30);
     overflow-x: hidden;
+}
+
+#searchTextbox {
+    display:inline;
+    color:white; 
+    padding:5px 2px;
+    margin:2px;border:none; 
+    font-size:1.1rem; 
+    width:97%;
+    overflow:hidden;
+    background-color:rgb(30,30,30);
+}
+
+#sendbuttonwrapper {
+ margin-right:5px;
+ width:100%;
+ height:100%;
+ overflow: hidden;
 }
 
 #pagewrapper {

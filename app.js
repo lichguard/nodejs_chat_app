@@ -46,7 +46,7 @@ app.get("/chathistory", function (req, res) {
     let user2 = req.param('user2');
     let msgs = [];
     for (i in msgs_history) {
-        if (msgs_history[i].to == user1 || msgs_history[i].to == user2 || msgs_history[i].from == user1 || msgs_history[i].from == user2)
+        if ((msgs_history[i].to == user1 && msgs_history[i].from == user2) || (msgs_history[i].to == user1 && msgs_history[i].from == user2))
             msgs.push(msgs_history[i]);
     }
     log('INFO', 'GET', 'chathistory requested of ' + user1 + ' and ' + user2);
