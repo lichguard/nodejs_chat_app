@@ -96,7 +96,7 @@ io.on('connection', function (client) {
         unsubscribe(client, data);
     });
 
-    client.on('join', function (data) {
+    client.on('auth', function (data) {
         userConnectingHandler(client, data);
     });
     client.on('newMessage', function (data) {

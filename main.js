@@ -69,7 +69,7 @@ function connect() {
         console.log('Critical Error: ' + data);
     });
 
-    socket.emit('join', {"username":DOM.userName.value, "password":DOM.userPassword.value});
+    socket.emit('auth', {"username":DOM.userName.value, "password":DOM.userPassword.value});
 }
 
 function disconnect() {
