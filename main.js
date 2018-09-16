@@ -249,7 +249,7 @@ function loadChatHistory(name) {
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState === 4) {
             if (xmlhttp.status === 200) {
-                console.log(xmlhttp.responseText);
+               // console.log(xmlhttp.responseText);
                 let response = JSON.parse(xmlhttp.responseText);
                 let from = "You";
                 for (let i in response) {
