@@ -3,7 +3,7 @@ const app = express();
 const server = require('http').createServer(app);
 const fs = require('fs');
 const io = require('socket.io')(server);
-const port = process.env.PORT || 9000;
+const port = 9000;
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(express.static(__dirname + '/node_modules'));
@@ -61,8 +61,13 @@ app.get("/getusers", function (req, res) {
     res.send(JSON.stringify(Object.keys(users_db)));
 });
 
-//doesnt work
-/*app.get("/managment.html", function (req, res) {
+app.get("/health", function (req, res) {
+    log('INFO', 'GET', 'Health check');
+    res.status(200);
+    res.send("");
+});
+
+app.get("/managment.html", function (req, res) {
     log("INFO", 'GET', "managment page request, sending managment.html");
     fs.readFile(__dirname + '/managment.html', function (err, data) {
         let html = data;
@@ -72,7 +77,7 @@ app.get("/getusers", function (req, res) {
     );
 
 });
-*/
+
 
 /* serves all other static files like css and js */
 app.get(/^(.+)$/, function (req, res) {
@@ -128,7 +133,6 @@ class user {
     }
 
     sendMsg(msgDescriptor) {
-        msgs_history.push(msgDescriptor);
         if (this.client != null)
         this.client.emit('newMessage', msgDescriptor);
     }
@@ -217,6 +221,7 @@ function subscribe(client, data) {
     users_db_by_socket[client.id].addFriend(data);
 }
 
+//not in use
 function unsubscribe(client, data) {
     log("INFO", 'SOCKET', users_db_by_socket[client.id].userName +  "requested to unsubscribe from " + data);
     users_db_by_socket[client.id].removeFriend(data);
@@ -261,8 +266,10 @@ function processMessage(client, data) {
 
     //send message
     data.message = cleanhtml(data.message);
+    msgs_history.push(data);
     recp.sendMsg(data);
-    log("INFO", 'SOCKET', 'From: ' + data.from + ' To: ' + data.to + ' --- message: ' + data.message);
+    sender.sendMsg(data);
+    log("INFO", 'SOCKET', 'Time: ' + data.timestamp + 'From: ' + data.from + ' To: ' + data.to + ' --- message: ' + data.message);
 }
 
 

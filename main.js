@@ -6,7 +6,7 @@ let socket = null;
 let connected = false;
 //current selected chat jname
 let activeChannelID = 'default';
-//list of friends // friends
+//list of chats, (saves number of unread messages)
 let channelList = {};
 //channelName, name, online
 
@@ -37,12 +37,19 @@ function connect() {
         displayAlert('Already connected!');
         return;
     }
+    
+    //does the general setup if the server is healthy
+    httpRequest(() => { setupIO(); }, (response) => { displayAlert("Failed to sign in! " + response); }, "GET", "/health", "", "");
+   
+}
+
+function setupIO() {
     connected = true;
     DOM.loginForm.style.display = "none";
     DOM.disconnectButton.style.display = "";
     clientName = DOM.userName.value;
-    DOM.welcomeSpan.innerHTML = "welcome " + clientName;
 
+    DOM.welcomeSpan.innerHTML = "Welcome " + clientName;
     socket = io.connect();
     socket.on('connect', function (client) {
         console.log('Connected to server!');
@@ -55,8 +62,9 @@ function connect() {
     });
 
     socket.on('newMessage', function (msgDescriptor) {
-        console.log('Recived new msg!');
-        handleIncomingMsg(msgDescriptor.from + ': ' + msgDescriptor.message, msgDescriptor.from);
+        console.log('Received new msg!');
+
+        handleIncomingMsg(msgDescriptor);
     });
 
     socket.on('disconnect', function (data) {
@@ -69,7 +77,8 @@ function connect() {
         console.log('Critical Error: ' + data);
     });
 
-    socket.emit('auth', {"username":DOM.userName.value, "password":DOM.userPassword.value});
+    socket.emit('auth', { "username": DOM.userName.value, "password": DOM.userPassword.value });
+
 }
 
 function disconnect() {
@@ -82,26 +91,14 @@ function disconnect() {
     }
     socket = null;
     connected = false;
-    DOM.welcomeSpan.innerHTML = "welcome";
+    DOM.welcomeSpan.innerHTML = "Welcome";
     DOM.disconnectButton.style.display = "none";
     DOM.loginForm.style.display = "block";
     activeChannelID = 'default';
     purge();
 }
 
-function purge() {
-    DOM.onlineList.innerHTML = "<a>> Online</a>";
-    DOM.offlineList.innerHTML = "<a>> Offline</a>";
-    DOM.chatBodies.innerHTML = "";
-}
-
-function cleaninput(input) {
-    input = input.replace(/&/g, "&amp;");
-    input = input.replace(/</g, "&lt;");
-    input = input.replace(/>/g, "&gt;");
-    input = input.replace(/\n$/, "");
-    return input;
-}
+/////////  HANDLE INC ///////// 
 
 //onlineUserList event
 function usersStatusList(data) {
@@ -128,24 +125,49 @@ function usersStatusList(data) {
 
 }
 
-//offlineUserList event
-function removeUserSelector(name) {
-    let div = document.querySelector(`#channel_${name}`);
-    if (div != null ) {
-        div.parentNode.removeChild(div);
-    }
-}
-
 //newMessage event
-function handleIncomingMsg(msg, name) {
-    appendChatBox(msg, name);
+function handleIncomingMsg(msgDescriptor) {
 
-    if (getChannelSelector(name).className.includes('inactive')) {
-        channelList[name].new = channelList[name].new + 1;
+    let payload = msgDescriptor.timestamp + " ";
+    let chatSelector = "";
 
-        getChannelSelector(name).innerHTML = `${name} (${channelList[name].new})`;
-        if (!getChannelSelector(name).className.includes('newmsg')) {
-            getChannelSelector(name).className += " newmsg";
+    if (msgDescriptor.from == clientName) {
+        chatSelector = msgDescriptor.to;
+        payload += "You: ";
+    }
+    else {
+        chatSelector = msgDescriptor.from;
+        payload += msgDescriptor.from + ": ";
+    }
+
+    //display image
+    if (msgDescriptor.type == 'img') {
+        payload += '<br><img class="chatimg" src="' + msgDescriptor.message + '"/>';
+    }
+    else if (msgDescriptor.type == 'txt') {
+
+        if (msgDescriptor.message.trim() == ":)") {
+            msgDescriptor.message = '<img class="chatemoji" src="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/129/smiling-face-with-smiling-eyes_1f60a.png">';
+        }
+        if (msgDescriptor.message.trim() == ":(") {
+            msgDescriptor.message = '<img class="chatemoji" src="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/129/disappointed-face_1f61e.png">';
+        }
+        if (msgDescriptor.message.trim() == ":D") {
+            msgDescriptor.message = '<img class="chatemoji" src="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/129/grinning-face-with-smiling-eyes_1f601.png">';
+        }
+
+        payload += msgDescriptor.message;
+    }
+
+    appendChatBox(payload, chatSelector);
+
+    //if the chatbox is not selected add 1 to unread messages
+    if (getChannelSelector(chatSelector).className.includes('inactive')) {
+        channelList[chatSelector].new = channelList[chatSelector].new + 1;
+
+        getChannelSelector(chatSelector).innerHTML = `${chatSelector} (${channelList[chatSelector].new})`;
+        if (!getChannelSelector(chatSelector).className.includes('newmsg')) {
+            getChannelSelector(chatSelector).className += " newmsg";
         }
     }
 
@@ -156,19 +178,43 @@ function appendChatBox(msg, name) {
 
     if (channel_body == null)
         return;
+
     channel_body.innerHTML += `<span class="textItem">${msg}</span>`;
-    DOM.chatBodies.scrollTop =  DOM.chatBodies.scrollHeight -  DOM.chatBodies.clientHeight;
+    DOM.chatBodies.scrollTop = DOM.chatBodies.scrollHeight - DOM.chatBodies.clientHeight;
 }
 
-//this client sends a msg
-function sendmg() {
+//-------- HANDLE INC-----------
+
+///////// USER TRIGGERED ////////
+
+function getFormattedDate() {
+    var date = new Date();
+
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var hour = date.getHours();
+    var min = date.getMinutes();
+    var sec = date.getSeconds();
+
+    month = (month < 10 ? "0" : "") + month;
+    day = (day < 10 ? "0" : "") + day;
+    hour = (hour < 10 ? "0" : "") + hour;
+    min = (min < 10 ? "0" : "") + min;
+    sec = (sec < 10 ? "0" : "") + sec;
+
+    return hour + ":" + min
+}
+
+//client sends a msg
+function sendmsg(type) {
     //prepare vars
     closeAlert();
     let msgDescriptor = {
         "from": clientName,
         "to": activeChannelID,
-        "date": 0,
-        "message": DOM.sendText.value
+        "timestamp": getFormattedDate(),
+        "message": DOM.sendText.value,
+        "type": type //img / txt
     };
     DOM.sendText.value = '';
 
@@ -176,8 +222,8 @@ function sendmg() {
     if (!(msgDescriptor.message && msgDescriptor.message.trim())) {
         return;
     }
-    //
-    appendChatBox('You: ' + cleaninput(msgDescriptor.message), msgDescriptor.to);
+    
+    //appendChatBox('You: ' + cleaninput(msgDescriptor.message), msgDescriptor.to);
 
     if (connected) {
         socket.emit('newMessage', msgDescriptor);
@@ -222,6 +268,7 @@ function switchChat(evt, selectedChannelID) {
 
 }
 
+//client wants to add a new friend
 function addFriend(name) {
     closeAlert();
     if (!connected)
@@ -231,43 +278,36 @@ function addFriend(name) {
     searchUser();
 }
 
+//----------- USER TRIGGERED ------------
+
 ///////// GET/POST FUNCTION ////////
+
+//offlineUserList event
+function removeUserSelector(name) {
+    let div = document.querySelector(`#channel_${name}`);
+    if (div != null) {
+        div.parentNode.removeChild(div);
+    }
+}
 //POST
 function registerButtonEvent() {
-    httpRequest(() => { displayAlert('Registered successfully! '); }, (res) => { displayAlert('Registered failed! ' + res); }, 'POST', '/register', '', JSON.stringify({ username: DOM.userName.value, password: DOM.userPassword.value }));
+    httpRequest(() => { displayAlert('Registered successfully! '); }, (res) => { displayAlert('Registration failed! ' + res); }, 'POST', '/register', '', JSON.stringify({ username: DOM.userName.value, password: DOM.userPassword.value }));
 }
 //GET
 function loadChatHistory(name) {
     if (!connected)
         return;
-    let xmlhttp = new XMLHttpRequest();
-    let url = "http://localhost:9000";
     let path = '/chathistory';
     let params = `user1=${clientName}&user2=${name}`;
-    xmlhttp.open("GET", url + path + "?" + params, true);
-    xmlhttp.setRequestHeader('Content-type', 'application/json');
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState === 4) {
-            if (xmlhttp.status === 200) {
-               // console.log(xmlhttp.responseText);
-                let response = JSON.parse(xmlhttp.responseText);
-                let from = "You";
-                for (let i in response) {
-                    if (response[i].from == clientName)
-                        from = "You";
-                    else
-                        from = response[i].from;
-
-                    appendChatBox(from + ': ' + response[i].message, name);
-                }
-
-            }
-            else {
-                displayAlert('Failed to fetch users, you might not be connected. ' + xmlhttp.responseText);
-            }
+    let body = JSON.stringify({ username: DOM.userName.value, password: DOM.userPassword.value });
+    httpRequest((response) => {
+        let msgs = JSON.parse(response);
+        for (let i in msgs) {
+            console.log(msgs[i]);
+            handleIncomingMsg(msgs[i]);
         }
-    }
-    xmlhttp.send(JSON.stringify({ username: DOM.userName.value, password: DOM.userPassword.value }));
+    }, (response) => { displayAlert('Failed to fetch users, ' + response) }
+    , 'GET', path, params, body);
 }
 //GET
 function loadAllUsers() {
@@ -283,10 +323,10 @@ function loadAllUsers() {
         JSON.stringify({ username: DOM.userName.value, password: DOM.userPassword.value }));
 }
 
-//get / post proxy
+//general call to make httpRequests
 function httpRequest(success, fail, method, path, params, body) {
     let xmlhttp = new XMLHttpRequest();
-    let url = "http://localhost:9000";
+    let url = "http://100.99.199.152:9000";
     xmlhttp.open(method, url + path + "?" + params, true);
     xmlhttp.withCredentials = true;
     xmlhttp.setRequestHeader('Content-type', 'application/json');
@@ -294,15 +334,21 @@ function httpRequest(success, fail, method, path, params, body) {
         if (xmlhttp.readyState === 4) {
             if (xmlhttp.status === 200)
                 success(xmlhttp.responseText);
-            else
+            else if (xmlhttp.status === 0)
+                fail("the server cannot be reached");
+            else 
                 fail(xmlhttp.responseText);
+            
         }
     }
     xmlhttp.send(body);
 }
+
 //--------- GET/POST FUNCTION --------
 
+
 /////////aux functions/////////////
+
 function searchUser() {
 
     if (!connected)
@@ -344,12 +390,30 @@ function closeAlert() {
     DOM.alert.style.display = "none";
 }
 
+//select channel box by name
 function getChannelSelector(channel_id) {
     return document.querySelector(`#channel_${channel_id}`);
 }
 
+//select channel body (content) by name
 function getChannelBody(channel_id) {
     return document.querySelector(`#channel_body_${channel_id}`);
+}
+
+//makes sure no code injection is in place
+function cleaninput(input) {
+    input = input.replace(/&/g, "&amp;");
+    input = input.replace(/</g, "&lt;");
+    input = input.replace(/>/g, "&gt;");
+    input = input.replace(/\n$/, "");
+    return input;
+}
+
+//disconnect from server, refresh all html
+function purge() {
+    DOM.onlineList.innerHTML = "<a>> Online</a>";
+    DOM.offlineList.innerHTML = "<a>> Offline</a>";
+    DOM.chatBodies.innerHTML = "";
 }
 
 //--------- aux functions --------

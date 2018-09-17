@@ -10,7 +10,6 @@
     <meta name="keywords" content="">
 
     <link href="main.css" rel="stylesheet" type="text/css" media="screen">
-    <script src="/jquery/dist/jquery.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 
@@ -69,10 +68,13 @@
             <!-- Chatcontrol -->
             <div id="chatcontrols" class="flex-container space">
                 <div id="textareawrapper" style="margin-right:5px;">
-                    <textarea id="sendText" onkeyup="if (event.keyCode == 13) sendmg();" style="color:white;resize:none; border:hidden; font-size:1.5rem; width:100%;height:100%;overflow:hidden;background-color:rgb(30,30,30);" placeholder="Write a message..."></textarea>
+                    <textarea id="sendText" onkeyup="if (event.keyCode == 13) sendmsg('txt');" style="color:white;resize:none; border:hidden; font-size:1.5rem; width:100%;height:100%;overflow:hidden;background-color:rgb(30,30,30);" placeholder="Write a message..."></textarea>
                 </div>
                 <div id="sendbuttonwrapper" class="sidebar">
-                    <button id="sendButton" onclick="sendmg();">Send</button>
+                    <button class="sendButton" onclick="sendmsg('txt');">Send</button>
+                </div>
+                <div id="sendbuttonwrapper" class="sidebar">
+                    <button class="sendButton" onclick="sendmsg('img');">IMG</button>
                 </div>
             </div>
 
