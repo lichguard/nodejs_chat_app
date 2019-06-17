@@ -326,7 +326,7 @@ function loadAllUsers() {
 //general call to make httpRequests
 function httpRequest(success, fail, method, path, params, body) {
     let xmlhttp = new XMLHttpRequest();
-    let url = "http://100.99.199.152:9000";
+    let url = "http://localhost:9000";
     xmlhttp.open(method, url + path + "?" + params, true);
     xmlhttp.withCredentials = true;
     xmlhttp.setRequestHeader('Content-type', 'application/json');
